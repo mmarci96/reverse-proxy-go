@@ -8,7 +8,7 @@ static:
 resources:
   - name: Radar proxy server
     endpoint: /radar/api/
-    destination_url: "http://localhost:8080/"
+    destination_url: "http://localhost:8080/api"
   - name: Tmdb proxy server
     endpoint: /tmdb/api/
-    destination_url: "http://localhost:8081"
+    destination_url: "http://localhost:8090/api"

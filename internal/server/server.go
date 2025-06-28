@@ -33,17 +33,18 @@ func Run() error {
 		return fmt.Errorf("could not load configuration: %v", err)
 	}
 	mux := http.NewServeMux()
+	mux.HandleFunc("/ping", ping)
 	for _, resource := range config.Resources {
 		url, _ := url.Parse(resource.Destination_URL)
 		proxy := NewProxy(url)
 		mux.HandleFunc(resource.Endpoint, ProxyRequestHandler(proxy, url, resource.Endpoint))
+		fmt.Printf("[ TinyRP ] Resource: %s - Setup %s forwarding to %s\n", 
+			resource.Name, resource.Endpoint, resource.Destination_URL)
 	}
-	fmt.Printf("[ ProxyServer ] Server running on http://%s:%s\n", config.Server.Host, config.Server.Listen_port)
-	mux.HandleFunc("/ping", ping)
-
 	spa := spaHandler{staticDir: config.Static.Dir}
 	mux.Handle("/", spa)
 
+	fmt.Printf("[ ProxyServer ] Server listening on http://%s:%s\n", config.Server.Host, config.Server.Listen_port)
 	if err := http.ListenAndServe(config.Server.Host+":"+config.Server.Listen_port, mux); err != nil {
 		return fmt.Errorf("could not start the server: %v", err)
 	}
@@ -93,5 +94,8 @@ func singleJoiningSlash(a, b string) string {
 }
 
 func ping(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("pong"))
+	_, err := w.Write([]byte("pong"))
+	if err != nil {
+		fmt.Printf("[ TiniRP ] Ping issue: %v\n", err)
+	}
 }
